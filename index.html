@@ -510,7 +510,7 @@ header{background:var(--sf);border-bottom:1px solid var(--bd);height:48px;displa
       <div class="project-title">📁 Projekte & Grundrisse</div>
       <div class="hsp"></div>
       <button class="btn bg" onclick="saveProjectToLibrary()">💾 Projekt sichern</button>
-      <button class="btn bg" onclick="saveProject()">⬇ Lokal exportieren</button>
+      <button class="btn bg" onclick="exportProjectLocalFile()">⬇ Lokal exportieren</button>
       <button class="btn bg" onclick="saveProjectToFolder()">📂 In Projektordner</button>
       <button class="btn bg" onclick="saveProjectToGoogleDrive()" style="color:var(--bl);border-color:var(--bl)">☁ Google Drive</button>
       <button class="btn ba" onclick="createProjectFromPage()">+ Projekt anlegen</button>
@@ -6363,6 +6363,25 @@ function makeId(prefix='id') { return prefix + '_' + Date.now().toString(36) + '
 function cleanFileName(name) { return (name || 'Grundriss').replace(/\.[^.]+$/, '').trim() || 'Grundriss'; }
 function readProjectLibrary() { try { return JSON.parse(localStorage.getItem(LS_PROJECT_LIBRARY) || '[]'); } catch(e) { return []; } }
 function writeProjectLibrary(list) { localStorage.setItem(LS_PROJECT_LIBRARY, JSON.stringify(list)); }
+  function exportProjectLocalFile() {
+    try {
+      const data = serializeProjectData();
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = cleanFileName(data.name || 'Projekt') + '.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      setStatus('Projekt lokal exportiert: ' + (data.name || 'Projekt'));
+  } catch(e) {
+      console.error('exportProjectLocalFile:', e);
+      alert('Lokaler Export fehlgeschlagen: ' + e.message);
+  }
+  }
 function currentFloorplanData(maxD=1600, quality=.72) {
   if (!state.floorplan || !state.floorplan.img) return null;
   try {
